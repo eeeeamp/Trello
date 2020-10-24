@@ -6,8 +6,6 @@ import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-
 import java.util.Properties;
 
 import static base.ReadFromPropertiesFile.*;
@@ -36,12 +34,13 @@ public class BaseTest {
         KEY_NUMBER = properties.getProperty("key");
         TOKEN = properties.getProperty("token");
 
-        f = new Faker();
         reqBuilder = new RequestSpecBuilder();
         reqBuilder.addQueryParam("key", KEY_NUMBER);
         reqBuilder.addQueryParam("token", TOKEN);
         reqBuilder.setContentType(ContentType.JSON);
         reqSpec = reqBuilder.build();
+
+        f = new Faker();
     }
 
     public static void deleteResource(String path, String id) {
