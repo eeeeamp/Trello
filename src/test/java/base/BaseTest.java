@@ -7,12 +7,14 @@ import io.restassured.specification.RequestSpecification;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+
+import java.util.Properties;
+
+import static base.ReadFromPropertiesFile.*;
 import static io.restassured.RestAssured.given;
 
 public class BaseTest {
 
-    protected static final String KEY_NUMBER = "d3ae3de7eb86b03f96cc1228661b1fd2";
-    protected static final String TOKEN = "f6865822249d1fe2cb72a3d0f1fe9655f6daa098cffabee4bc04e154ac3ccae6";
     protected static final String BASE_URL = "https://api.trello.com/1/";
     protected static final String BOARDS = "boards";
     protected static final String LISTS = "lists";
@@ -24,20 +26,25 @@ public class BaseTest {
     protected static RequestSpecification reqSpec;
     protected static String orgName;
 
+    protected static String KEY_NUMBER;
+    protected static String TOKEN;
+
     @BeforeAll
-    protected static void beforeAll() {
+    protected static void beforeAll() throws Exception {
+
+        Properties properties = readPropertiesFile("credentials.properties");
+        KEY_NUMBER = properties.getProperty("key");
+        TOKEN = properties.getProperty("token");
 
         f = new Faker();
         reqBuilder = new RequestSpecBuilder();
         reqBuilder.addQueryParam("key", KEY_NUMBER);
         reqBuilder.addQueryParam("token", TOKEN);
         reqBuilder.setContentType(ContentType.JSON);
-
-        //wzorzec projektowy - jak uzywamy builera ZAWSZe musimy zrobic na koniec build
         reqSpec = reqBuilder.build();
     }
 
-    protected void deleteResource(String path, String id) {
+    public static void deleteResource(String path, String id) {
 
         given()
                 .queryParam("key", KEY_NUMBER)

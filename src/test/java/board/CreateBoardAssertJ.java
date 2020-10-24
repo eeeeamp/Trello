@@ -1,16 +1,21 @@
 package board;
 
 import base.BaseTest;
+import base.MyTestWatcher;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import java.util.List;
+
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.*;
 import static org.assertj.core.api.Assertions.*;
 
-
+@ExtendWith(MyTestWatcher.class)
 public class CreateBoardAssertJ extends BaseTest {
 
     private String boardName;
@@ -23,6 +28,15 @@ public class CreateBoardAssertJ extends BaseTest {
 
     }
 
+    @AfterEach
+    public void afterEach() {
+
+        if (boardId != null && !boardId.trim().isEmpty()) {
+            MyTestWatcher.path = BOARDS;
+            MyTestWatcher.id = boardId;
+        }
+    }
+
     @Test
     public void createABoard() {
 
@@ -32,17 +46,15 @@ public class CreateBoardAssertJ extends BaseTest {
                 .when()
                 .post(BASE_URL + BOARDS)
                 .then()
-                .statusCode(HttpStatus.SC_OK)
                 .extract()
                 .response();
 
         JsonPath jsonResponse = response.jsonPath();
 
-        assertThat(jsonResponse.getString("name")).isEqualTo(boardName);
-
         boardId = jsonResponse.get("id");
 
-        deleteResource(BOARDS, boardId);
+        assertThat(response.statusCode()).isEqualTo(SC_OK);
+        assertThat(jsonResponse.getString("name")).isEqualTo(boardName);
 
     }
 
@@ -55,7 +67,7 @@ public class CreateBoardAssertJ extends BaseTest {
                 .when()
                 .post(BASE_URL + BOARDS)
                 .then()
-                .statusCode(HttpStatus.SC_BAD_REQUEST);
+                .statusCode(SC_BAD_REQUEST);
 
     }
 
@@ -69,14 +81,15 @@ public class CreateBoardAssertJ extends BaseTest {
                 .when()
                 .post(BASE_URL + BOARDS)
                 .then()
-                .statusCode(HttpStatus.SC_OK)
                 .extract()
                 .response();
 
         JsonPath jsonResponse = response.jsonPath();
 
-        assertThat(jsonResponse.getString("name")).isEqualTo(boardName);
         boardId = jsonResponse.get("id");
+
+        assertThat(response.statusCode()).isEqualTo(SC_OK);
+        assertThat(jsonResponse.getString("name")).isEqualTo(boardName);
 
         //to check if the board containing lists
         Response responseLists = given()
@@ -85,7 +98,6 @@ public class CreateBoardAssertJ extends BaseTest {
                 .when()
                 .get(BASE_URL + BOARDS + "/{id}/" + LISTS)
                 .then()
-                .statusCode(HttpStatus.SC_OK)
                 .extract()
                 .response();
 
@@ -93,9 +105,8 @@ public class CreateBoardAssertJ extends BaseTest {
 
         List<String> idList = jsonResponseList.getList("id");
 
+        assertThat(response.statusCode()).isEqualTo(SC_OK);
         assertThat(idList).isEmpty();
-
-        deleteResource(BOARDS, boardId);
 
     }
 
@@ -109,17 +120,15 @@ public class CreateBoardAssertJ extends BaseTest {
                 .when()
                 .post(BASE_URL + BOARDS)
                 .then()
-                .statusCode(HttpStatus.SC_OK)
                 .extract()
                 .response();
 
         JsonPath jsonResponse = response.jsonPath();
 
-
-        assertThat(jsonResponse.getString("name")).isEqualTo(boardName);
-
-
         boardId = jsonResponse.get("id");
+
+        assertThat(response.statusCode()).isEqualTo(SC_OK);
+        assertThat(jsonResponse.getString("name")).isEqualTo(boardName);
 
         //to check if the board containing lists
         Response responseLists = given()
@@ -128,7 +137,6 @@ public class CreateBoardAssertJ extends BaseTest {
                 .when()
                 .get(BASE_URL + BOARDS + "/{id}/" + LISTS)
                 .then()
-                .statusCode(HttpStatus.SC_OK)
                 .extract()
                 .response();
 
@@ -136,9 +144,9 @@ public class CreateBoardAssertJ extends BaseTest {
 
         List<String> nameList = jsonResponseList.getList("name");
 
+        assertThat(response.statusCode()).isEqualTo(SC_OK);
         assertThat(nameList).hasSize(3).contains("To Do", "Doing", "Done");
 
-        deleteResource(BOARDS, boardId);
 
     }
 
